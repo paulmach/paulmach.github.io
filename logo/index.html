@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+svg.d3-logo g.blue-lines {
+    width: 500px;
+    height: 500px;
+    -webkit-animation:spin 4s linear infinite;
+    -moz-animation:spin 4s linear infinite;
+    animation:spin 4s linear infinite;
+}
+@-moz-keyframes spin { 100% { -moz-transform: rotate(360deg); } }
+@-webkit-keyframes spin { 100% { -webkit-transform: rotate(360deg); } }
+@keyframes spin { 100% { -webkit-transform: rotate(360deg); transform:rotate(360deg); } }
+
+svg.d3-logo g.dots circle {
+  fill: rgb(45, 166, 64);
+  stroke: white;
+  stroke-width: 9px;
+}
+
+svg.d3-logo .blue-fill {
+  fill: rgb(32, 141, 212)
+}
+</style>
+
+<body style="padding: 0; margin: 0">
+<img src="tetration_logo.svg" style="display: none; background-color: #f50000; opacity: 0.3; height: 500px; width: 500px; position: absolute; top: 0; left: 0">
+
+<script src="d3.v3.min.js"></script>
+<script src="tet-logo.js"></script>
+</body>
+</html>
