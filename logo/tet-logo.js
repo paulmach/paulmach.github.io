@@ -63,33 +63,63 @@ arcs.forEach(function(r) {
     .attr('d', arc(data));
 });
 
+// dots
 var dotsG = g.append('g')
    .attr('class', 'dots');
 
-var dotCount = 0;
-var angleDots = [118, 169, 224];
+// initial dots, hope my math is right to create initial state.
+var dots = [[169, -304], [118, -250], [118, -158], [169, -208],[169, -124]];
+dots.forEach(function(d) {
+  var arcLength = (2*Math.PI - 0.8)/Math.PI*180;
+  var p = 3400*(-d[1])/360;
 
-addDot();
-function addDot() {
-  if (dotCount >= angleDots.length) {
-    // return;
-  }
+  var r = (-25/3100)*p + (25 + 300*25/3100);
+  addSmallerDot(d[1], d[0], r);
+});
 
-  var dot = angleDots[Math.floor(Math.random()*angleDots.length)];
-  var angle = currentAngle('blue-lines');
-
+function addSmallerDot(angle, locy, r) {
   var c = dotsG.append('circle')
     .attr('cx', 0)
-    .attr('cy', dot)
-    .attr('transform', 'rotate(' + (180+angle) + ')')
+    .attr('cy', locy)
+    .attr('transform', 'rotate(' + (270 + angle) + ')')
+    .attr('r', r)
+    .style('stroke-width', 9*r/25);
+
+  var p = r/25;
+  c.transition()
+    .duration(p*3100)
+    .ease('linear')
     .attr('r', 0)
     .style('stroke-width', 0)
+    .remove();
+}
+
+// the dots that come up
+addDots();
+setInterval(addDots, 4000);
+
+function addDots() {
+  dots.forEach(function(d) {
+    var a = d[1];
+    setTimeout(function() {
+      addDot(a, d[0]);
+    }, (450+a)/360*4000);
+  });
+}
+
+function addDot(angle, locy) {
+  var c = dotsG.append('circle')
+    .attr('cx', 0)
+    .attr('cy', locy)
+    .attr('transform', 'rotate(' + (275 + angle) + ')')
+    .attr('r', 0)
+    .style('stroke-width', 0);
 
   c.transition()
     .duration(100)
     .ease('linear')
     .attr('r', 25)
-    .style('stroke-width', 9)
+    .style('stroke-width', 9);
 
   c.transition().delay(200)
     .duration(3100)
@@ -97,45 +127,4 @@ function addDot() {
     .attr('r', 0)
     .style('stroke-width', 0)
     .remove();
-
-  var delay = 200 + 700*Math.random();
-  setTimeout(addDot, delay);
-  dotCount++;
 }
-
-
-// var dots = [[-118, 22], [-118, -70], [-169, 56], [-169, -28], [-169, -124]];
-
-//  dots.forEach(function(d) {
-//   dotsG.append('circle')
-//     .attr('cx', d[0])
-//     .attr('cy', 0)
-//     .attr('transform', 'rotate(' + d[1] + ')')
-//     .attr('r', 25);
-// });
-var angle = 26.4;
-// move();
-function move() {
-  // g.attr('transform', 'translate(251.5, 252)rotate(' + angle + ')');
-
-  angle += 0.2;
-  console.log(currentAngle());
-  setTimeout(move, 1000);
-}
-
-function currentAngle(id) {
-  var el = document.getElementById(id);
-  var st = window.getComputedStyle(el, null);
-  var tr = st.getPropertyValue('-webkit-transform') ||
-           st.getPropertyValue('-moz-transform') ||
-           st.getPropertyValue('-ms-transform') ||
-           st.getPropertyValue('-o-transform') ||
-           st.getPropertyValue('transform') ||
-           'fail...';
-
-  var values = tr.split('(')[1];
-      values = values.split(')')[0];
-      values = values.split(',');
-  return Math.round(Math.atan2(values[1], values[0]) * (180/Math.PI));
-}
-
