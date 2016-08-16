@@ -139,32 +139,37 @@ function buildLogo(svg, scale) {
   }
 
   function currentAngle() {
-    // source: https://css-tricks.com/get-value-of-css-rotation-through-javascript/
-    var el = document.getElementById('blue-lines');
-    var st = window.getComputedStyle(el, null);
-    var tr = st.getPropertyValue('-webkit-transform') ||
-             st.getPropertyValue('-moz-transform') ||
-             st.getPropertyValue('-ms-transform') ||
-             st.getPropertyValue('-o-transform') ||
-             st.getPropertyValue('transform') ||
-             'fail...';
+    try {
+      // source: https://css-tricks.com/get-value-of-css-rotation-through-javascript/
+      var el = document.getElementById('blue-lines');
+      var st = window.getComputedStyle(el, null);
+      var tr = st.getPropertyValue('-webkit-transform') ||
+               st.getPropertyValue('-moz-transform') ||
+               st.getPropertyValue('-ms-transform') ||
+               st.getPropertyValue('-o-transform') ||
+               st.getPropertyValue('transform') ||
+               'fail...';
 
-    // rotation matrix - http://en.wikipedia.org/wiki/Rotation_matrix
-    var values = tr.split('(')[1];
-        values = values.split(')')[0];
-        values = values.split(',');
-    var a = values[0];
-    var b = values[1];
-    var c = values[2];
-    var d = values[3];
+      // rotation matrix - http://en.wikipedia.org/wiki/Rotation_matrix
+      var values = tr.split('(')[1];
+          values = values.split(')')[0];
+          values = values.split(',');
+      var a = values[0];
+      var b = values[1];
+      var c = values[2];
+      var d = values[3];
 
-    var scale = Math.sqrt(a*a + b*b);
+      var scale = Math.sqrt(a*a + b*b);
 
-    // arc sin, convert from radians to degrees, round
-    // DO NOT USE: see update below
-    var sin = b/scale;
-    var angle = Math.round(Math.asin(sin) * (180/Math.PI));
+      // arc sin, convert from radians to degrees, round
+      // DO NOT USE: see update below
+      var sin = b/scale;
+      var angle = Math.round(Math.asin(sin) * (180/Math.PI));
 
-    return angle;
+      return angle;
+    }
+    catch(err) {
+      return 0;
+    }
   }
 }
