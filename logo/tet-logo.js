@@ -19,8 +19,9 @@ function buildLogo(svg, scale) {
     .attr('x', -250).attr('y', -250)
     .attr('width', 500).attr('height', 500);
 
-  g.attr('transform', 'scale(' + scale + ')translate(251.5, 252)rotate(26.4)');
+  g.attr('transform', 'scale(' + scale + ')translate(252, 252)rotate(26)');
 
+  // blueLines is what is rotated by the css animation.
   var blueLines = g.append('g')
     .attr('id', 'blue-lines')
     .attr('class', 'blue-lines');
@@ -30,7 +31,7 @@ function buildLogo(svg, scale) {
     .attr('class', 'blue-fill')
     .attr('cx', 0)
     .attr('cy', 0)
-    .attr('r', 25.2);
+    .attr('r', 25);
 
   // bar
   blueLines.append('rect')
@@ -40,6 +41,7 @@ function buildLogo(svg, scale) {
     .attr('height', 237)
     .attr('width', 16);
 
+  // draw the arcs
   var arcSteps = 80.0,
     arcStart = 2*Math.PI,
     arcEnd = 0.8;
@@ -73,26 +75,25 @@ function buildLogo(svg, scale) {
      .attr('class', 'dots');
 
   // initial dots, hope my math is right to create initial state.
-  var dots = [[169, -304], [118, -250], [118, -158], [169, -208],[169, -124]];
+  // [vertical y from center, angle (backwards from the blue bar]
+  var dots = [[169, -214], [118, -160], [169, -118], [118, -68], [169, -34]];
+  var angleTotal = (2*Math.PI - 0.8)*(180/Math.PI); // total angle involved in animations.
   dots.forEach(function(d) {
-    var arcLength = (2*Math.PI - 0.8)/Math.PI*180;
-    var p = 3400*(-d[1])/360;
-
-    var r = (-25/3100)*p + (25 + 300*25/3100);
-    addSmallerDot(d[1], d[0], r);
+    var a = d[1] - 200/4000; // 200ms delay, before 3100ms fade out starts
+    var p = (angleTotal+a)/angleTotal;
+    addSmallerDot(d[1], d[0], p);
   });
 
-  function addSmallerDot(angle, locy, r) {
+  function addSmallerDot(angle, locy, p) {
     var c = dotsG.append('circle')
       .attr('cx', 0)
-      .attr('cy', locy)
-      .attr('transform', 'rotate(' + (270 + angle) + ')')
-      .attr('r', r)
-      .style('stroke-width', 9*r/25);
+      .attr('cy', -locy) // negative y is up in graphics
+      .attr('transform', 'rotate(' + angle + ')')
+      .attr('r', 25*p)
+      .style('stroke-width', 9*p);
 
-    var p = r/25;
     c.transition()
-      .duration(p*3100)
+      .duration(p*3100) // 3100ms standard fade out
       .ease('linear')
       .attr('r', 0)
       .style('stroke-width', 0)
@@ -104,19 +105,22 @@ function buildLogo(svg, scale) {
   setInterval(addDots, 4000);
 
   function addDots() {
+    // get the current rotation angle so if there is
+    // some sort of animation delay we can account for it.
+    var angle = currentAngle() + 360;
     dots.forEach(function(d) {
       var a = d[1];
       setTimeout(function() {
         addDot(a, d[0]);
-      }, (450+a)/360*4000 - 50);
+      }, (360+a)/360*4000 - 50 + (360-angle)/360*4000);
     });
   }
 
   function addDot(angle, locy) {
     var c = dotsG.append('circle')
       .attr('cx', 0)
-      .attr('cy', locy)
-      .attr('transform', 'rotate(' + (270 + angle) + ')')
+      .attr('cy', -locy) // negative y is up in graphics
+      .attr('transform', 'rotate(' + angle + ')')
       .attr('r', 0)
       .style('stroke-width', 0);
 
@@ -126,11 +130,41 @@ function buildLogo(svg, scale) {
       .attr('r', 25)
       .style('stroke-width', 9);
 
-    c.transition().delay(200)
+    c.transition().delay(200) // 200ms delay before 3100ms fade out starts.
       .duration(3100)
       .ease('linear')
       .attr('r', 0)
       .style('stroke-width', 0)
       .remove();
+  }
+
+  function currentAngle() {
+    // source: https://css-tricks.com/get-value-of-css-rotation-through-javascript/
+    var el = document.getElementById('blue-lines');
+    var st = window.getComputedStyle(el, null);
+    var tr = st.getPropertyValue('-webkit-transform') ||
+             st.getPropertyValue('-moz-transform') ||
+             st.getPropertyValue('-ms-transform') ||
+             st.getPropertyValue('-o-transform') ||
+             st.getPropertyValue('transform') ||
+             'fail...';
+
+    // rotation matrix - http://en.wikipedia.org/wiki/Rotation_matrix
+    var values = tr.split('(')[1];
+        values = values.split(')')[0];
+        values = values.split(',');
+    var a = values[0];
+    var b = values[1];
+    var c = values[2];
+    var d = values[3];
+
+    var scale = Math.sqrt(a*a + b*b);
+
+    // arc sin, convert from radians to degrees, round
+    // DO NOT USE: see update below
+    var sin = b/scale;
+    var angle = Math.round(Math.asin(sin) * (180/Math.PI));
+
+    return angle;
   }
 }
